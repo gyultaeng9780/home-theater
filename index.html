@@ -172,9 +172,9 @@ function save(){try{const d={};fields.forEach(k=>d[k]=$(k).value);checks.forEach
 function renderOrder(){
   const a=lines($('ads').value).length,t=lines($('trailers').value).length,s=[];
   if($('optLobby').checked)s.push('입장 화면');
+  if($('optManner').checked)s.push('관람 안내');
   if(a)s.push('광고 '+a+'편');
   if(t)s.push('예고편 '+t+'편');
-  if($('optManner').checked)s.push('관람 안내');
   const v=lines($('intro').value).length;if(v)s.push('시작 영상 '+v+'편');
   s.push('본 영화');
   $('order').innerHTML=s.map(x=>'<span class="step">'+x+'</span>').join('<span class="arrow">›</span>');
@@ -208,7 +208,6 @@ async function playYT(id){
       let st=-1;try{st=player.getPlayerState()}catch(e){}
       if(st===YT.PlayerState.PLAYING){t0=Date.now();return}
       if(st!==YT.PlayerState.PAUSED&&Date.now()-t0>4000){try{player.playVideo()}catch(e){}}
-      if(st!==YT.PlayerState.PAUSED&&st!==YT.PlayerState.BUFFERING&&Date.now()-t0>15000)fin();
     },1000);
   });
 }
@@ -236,14 +235,12 @@ async function run(){
   running=true;$('setup').style.display='none';$('stage').classList.add('on');
   try{await document.documentElement.requestFullscreen()}catch(e){}
   if($('optLobby').checked)await lobby(Math.max(3,+$('lobbySec').value||15));
+  if(running&&$('optManner').checked)await screen('sManner',7000);
   for(let i=0;i<ads.length&&running;i++){tag('광고 '+(i+1)+'/'+ads.length);await playYT(ads[i])}
   for(let i=0;i<trs.length&&running;i++){tag('예고편 '+(i+1)+'/'+trs.length);await playYT(trs[i])}
-  if(running&&$('optManner').checked)await screen('sManner',7000);
+  for(let i=0;i<intro.length&&running;i++)await playYT(intro[i]);
   if(!running)return;
   $('sFeature').classList.add('show');await wait(4500);
-  if(intro.length){$('sFeature').classList.remove('show');await new Promise(r=>setTimeout(r,900));
-    for(let i=0;i<intro.length&&running;i++)await playYT(intro[i]);
-    if(!running)return;}
   $('lights').classList.add('on');await wait(2600);
   if(!running)return;
   if(ott)location.href=ott;else stop();
