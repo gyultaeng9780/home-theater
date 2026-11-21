@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>우리집 영화관</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0c0a0b;--panel:#17131a;--line:#2c2530;--ink:#f3ece4;--dim:#a99ea3;--red:#b3122e;--gold:#e8c37a}
+*{box-sizing:border-box;min-width:0}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:16px/1.55 "Noto Sans KR",system-ui,sans-serif}
+button,input,textarea{font:inherit;color:inherit}
+/* 설정 화면 */
+#setup{min-height:100%;display:flex;flex-direction:column;align-items:center;padding:48px 20px 64px;
+  background:radial-gradient(ellipse 80% 45% at 50% 0,#3a0a16 0,transparent 70%),var(--bg)}
+.brand{font-family:"Gowun Batang",serif;font-size:44px;line-height:1.05;margin:0 0 6px;text-align:center;letter-spacing:.02em}
+.sub{color:var(--dim);margin:0 0 32px;text-align:center}
+.wrap{width:100%;max-width:880px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:18px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px}
+.card.full{grid-column:1/-1}
+label{display:block;font-weight:700;margin-bottom:8px}
+.hint{color:var(--dim);font-size:13px;margin:6px 0 0}
+input[type=text],input[type=number],textarea{width:100%;background:#0f0c10;border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:16px;outline:none}
+input:focus,textarea:focus{border-color:var(--gold)}
+textarea{min-height:132px;resize:vertical;line-height:1.6}
+.row{display:flex;gap:18px;flex-wrap:wrap;align-items:center}
+.chk{display:flex;align-items:center;gap:10px;font-weight:500;margin:0;cursor:pointer}
+.chk input{width:20px;height:20px;accent-color:var(--red)}
+.num{display:flex;align-items:center;gap:10px;font-weight:500}
+.num input{width:84px;text-align:center}
+.order{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:4px}
+.step{display:inline-flex;align-items:center;justify-content:center;height:36px;padding:0 14px;border-radius:999px;background:#221b25;border:1px solid var(--line);font-size:14px;line-height:1}
+.arrow{color:var(--dim);display:inline-flex;align-items:center;height:36px}
+.go{grid-column:1/-1;display:flex;justify-content:center;margin-top:8px}
+#start{height:60px;padding:0 48px;border:0;border-radius:999px;background:var(--red);font-size:19px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:1;box-shadow:0 8px 30px #b3122e55}
+#start:hover{background:#c8173a}#start:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+#msg{grid-column:1/-1;text-align:center;color:var(--gold);min-height:24px;margin:0}
+.keys{grid-column:1/-1;text-align:center;color:var(--dim);font-size:13px}
+kbd{display:inline-block;border:1px solid var(--line);border-radius:6px;padding:0 6px;background:#1d1720;color:var(--ink)}
+@media(max-width:700px){.wrap{grid-template-columns:minmax(0,1fr)}.brand{font-size:34px}}
+/* 상영 화면 */
+#stage{position:fixed;inset:0;background:#000;display:none;cursor:none}
+#stage.on{display:block}
+#ytbox{position:absolute;inset:0;opacity:0;transition:opacity .6s}
+#ytbox.show{opacity:1}
+#ytbox iframe{width:100%;height:100%;border:0}
+#tag{position:absolute;top:28px;left:32px;font-size:15px;letter-spacing:.06em;color:#fff;background:#0009;padding:6px 14px;border-radius:6px;opacity:0;transition:opacity .5s;pointer-events:none}
+#tag.show{opacity:1}
+.scr{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;opacity:0;transition:opacity .9s;pointer-events:none;padding:5vw}
+.scr.show{opacity:1}
+.lobby{background:radial-gradient(ellipse 70% 60% at 50% 40%,#2a0811 0,#000 75%)}
+.lobby .now{color:var(--gold);font-size:clamp(16px,1.6vw,24px);letter-spacing:.3em;margin-bottom:2vh}
+.lobby h2{font-family:"Gowun Batang",serif;font-size:clamp(40px,6vw,96px);line-height:1.1;margin:0 0 4vh;text-wrap:balance}
+.lobby .soon{color:var(--dim);font-size:clamp(16px,1.5vw,22px)}
+.lobby .cd{font-family:"Gowun Batang",serif;font-size:clamp(28px,3vw,44px);color:#fff;margin-top:2vh}
+.manner{background:#000}
+.manner h3{font-family:"Gowun Batang",serif;font-size:clamp(28px,3.4vw,52px);margin:0 0 5vh}
+.mlist{display:flex;gap:4vw;justify-content:center;flex-wrap:wrap}
+.mi{width:clamp(150px,15vw,230px);display:flex;flex-direction:column;align-items:center;gap:2vh}
+.mi svg{width:clamp(72px,7vw,110px);height:auto}
+.mi span{font-size:clamp(15px,1.4vw,21px);line-height:1.4}
+.feature{background:#000}
+.feature .lab{color:var(--gold);letter-spacing:.4em;font-size:clamp(14px,1.3vw,20px);margin-bottom:3vh}
+.feature h2{font-family:"Gowun Batang",serif;font-size:clamp(36px,5vw,84px);margin:0;line-height:1.1}
+.feature .tip{color:#777;margin-top:6vh;font-size:clamp(13px,1.1vw,17px)}
+#lights{position:absolute;inset:0;background:#000;opacity:0;transition:opacity 2.5s;pointer-events:none}
+#lights.on{opacity:1}
+@media(prefers-reduced-motion:reduce){.scr,#ytbox,#lights{transition:none}}
+</style>
+</head>
+<body>
+<main id="setup">
+  <h1 class="brand">우리집 영화관</h1>
+  <p class="sub">광고 · 예고편이 끝나면 영화가 자동으로 이어집니다</p>
+  <form class="wrap" id="f">
+    <div class="card full">
+      <label for="title">오늘의 상영작</label>
+      <input type="text" id="title" placeholder="예: 인터스텔라">
+    </div>
+    <div class="card">
+      <label for="ads">광고 영상</label>
+      <textarea id="ads" placeholder="유튜브 링크를 한 줄에 하나씩"></textarea>
+      <p class="hint">위에서부터 순서대로 재생됩니다</p>
+    </div>
+    <div class="card">
+      <label for="trailers">예고편</label>
+      <textarea id="trailers" placeholder="유튜브 링크를 한 줄에 하나씩"></textarea>
+      <p class="hint">광고가 끝난 뒤 순서대로 재생됩니다</p>
+    </div>
+    <div class="card full">
+      <label for="ott">본 영화 OTT 링크</label>
+      <input type="text" id="ott" placeholder="예: https://www.netflix.com/watch/80000000">
+      <p class="hint">OTT에서 영화 재생 화면을 연 뒤 주소창의 주소를 그대로 붙여 넣어 주세요</p>
+    </div>
+    <div class="card full">
+      <div class="row" style="justify-content:center">
+        <label class="chk"><input type="checkbox" id="optLobby" checked>입장 화면</label>
+        <label class="num">입장 대기 <input type="number" id="lobbySec" min="3" max="600" value="15">초</label>
+        <label class="chk"><input type="checkbox" id="optManner" checked>관람 안내</label>
+        <label class="chk"><input type="checkbox" id="optTag" checked>광고/예고편 표시</label>
+      </div>
+    </div>
+    <div class="card full">
+      <div class="order" id="order"></div>
+    </div>
+    <p id="msg"></p>
+    <div class="go"><button type="submit" id="start">상영 시작</button></div>
+    <p class="keys">상영 중 <kbd>→</kbd> 다음으로 넘기기 · <kbd>Space</kbd> 일시정지 · <kbd>Esc</kbd> 두 번 누르면 상영 중단</p>
+  </form>
+</main>
+
+<div id="stage">
+  <div id="ytbox"><div id="yt"></div></div>
+  <div id="tag"></div>
+  <section class="scr lobby" id="sLobby">
+    <div class="now">NOW SHOWING</div>
+    <h2 id="lTitle"></h2>
+    <div class="soon">잠시 후 상영이 시작됩니다</div>
+    <div class="cd" id="lCd"></div>
+  </section>
+  <section class="scr manner" id="sManner">
+    <h3>함께 보는 관람 매너</h3>
+    <div class="mlist">
+      <div class="mi"><svg viewBox="0 0 80 80" fill="none" stroke="#e8c37a" stroke-width="3"><rect x="24" y="10" width="32" height="60" rx="6"/><line x1="36" y1="62" x2="44" y2="62"/><line x1="14" y1="14" x2="66" y2="66" stroke="#b3122e" stroke-width="4"/></svg><span>휴대폰은<br>무음으로</span></div>
+      <div class="mi"><svg viewBox="0 0 80 80" fill="none" stroke="#e8c37a" stroke-width="3"><rect x="30" y="10" width="20" height="36" rx="10"/><path d="M20 38a20 20 0 0 0 40 0"/><line x1="40" y1="58" x2="40" y2="70"/><line x1="14" y1="14" x2="66" y2="66" stroke="#b3122e" stroke-width="4"/></svg><span>디스코드 마이크는<br>잠시 꺼 주세요</span></div>
+      <div class="mi"><svg viewBox="0 0 80 80" fill="none" stroke="#e8c37a" stroke-width="3"><path d="M18 30h44l-6 40H24z"/><path d="M22 30c-4-10 6-16 10-10 2-8 14-8 16 0 4-6 14 0 10 10"/><line x1="34" y1="36" x2="36" y2="64"/><line x1="46" y1="36" x2="44" y2="64"/></svg><span>간식 준비하고<br>편하게 앉기</span></div>
+    </div>
+  </section>
+  <section class="scr feature" id="sFeature">
+    <div class="lab">FEATURE PRESENTATION</div>
+    <h2 id="fTitle"></h2>
+    <div class="tip">영화가 열리면 <b style="color:#aaa">F</b> 키나 전체화면 버튼을 눌러 주세요</div>
+  </section>
+  <div id="lights"></div>
+</div>
+
+<script>
+{
+const $=id=>document.getElementById(id);
+const KEY='home-theater-v1';
+const fields=['title','ads','trailers','ott','lobbySec'], checks=['optLobby','optManner','optTag'];
+
+function ytId(u){
+  u=u.trim(); if(!u) return null;
+  if(/^[\w-]{11}$/.test(u)) return u;
+  const m=u.match(/(?:v=|youtu\.be\/|shorts\/|embed\/|live\/)([\w-]{11})/);
+  return m?m[1]:null;
+}
+const lines=t=>t.split(/\n/).map(s=>s.trim()).filter(Boolean);
+
+function load(){try{const d=JSON.parse(localStorage.getItem(KEY)||'{}');
+  fields.forEach(k=>{if(d[k]!=null)$(k).value=d[k]});checks.forEach(k=>{if(d[k]!=null)$(k).checked=d[k]});}catch(e){}}
+function save(){try{const d={};fields.forEach(k=>d[k]=$(k).value);checks.forEach(k=>d[k]=$(k).checked);localStorage.setItem(KEY,JSON.stringify(d))}catch(e){}}
+
+function renderOrder(){
+  const a=lines($('ads').value).length,t=lines($('trailers').value).length,s=[];
+  if($('optLobby').checked)s.push('입장 화면');
+  if(a)s.push('광고 '+a+'편');
+  if(t)s.push('예고편 '+t+'편');
+  if($('optManner').checked)s.push('관람 안내');
+  s.push('본 영화');
+  $('order').innerHTML=s.map(x=>'<span class="step">'+x+'</span>').join('<span class="arrow">›</span>');
+}
+$('f').addEventListener('input',()=>{save();renderOrder()});
+
+/* YouTube 플레이어 */
+let player=null,apiReady=false,apiWait=[];
+window.onYouTubeIframeAPIReady=()=>{apiReady=true;apiWait.forEach(f=>f());apiWait=[]};
+const sc=document.createElement('script');sc.src='https://www.youtube.com/iframe_api';document.head.appendChild(sc);
+const whenApi=()=>new Promise(r=>apiReady?r():apiWait.push(r));
+
+let skip=null,running=false,timer=null;
+const wait=ms=>new Promise(r=>{let done=false;const fin=()=>{if(!done){done=true;clearTimeout(timer);r()}};timer=setTimeout(fin,ms);skip=fin});
+
+async function playYT(id){
+  await whenApi();
+  return new Promise(res=>{
+    let done=false,watch;
+    const fin=()=>{if(done)return;done=true;clearInterval(watch);$('ytbox').classList.remove('show');try{player.stopVideo()}catch(e){}setTimeout(res,600)};
+    skip=fin;
+    const onState=e=>{if(e.data===YT.PlayerState.ENDED)fin();if(e.data===YT.PlayerState.PLAYING)$('ytbox').classList.add('show')};
+    if(!player){
+      player=new YT.Player('yt',{host:'https://www.youtube-nocookie.com',videoId:id,
+        playerVars:{autoplay:1,controls:0,rel:0,iv_load_policy:3,disablekb:1,playsinline:1,fs:0},
+        events:{onReady:e=>{e.target.unMute();e.target.setVolume(100);e.target.playVideo()},onStateChange:e=>player._h&&player._h(e),onError:()=>fin()}});
+    }else{player.loadVideoById(id)}
+    player._h=onState;
+    let t0=Date.now();
+    watch=setInterval(()=>{ // 재생이 시작되지 않으면 다시 시도 후 건너뛰기
+      let st=-1;try{st=player.getPlayerState()}catch(e){}
+      if(st===YT.PlayerState.PLAYING){t0=Date.now();return}
+      if(st!==YT.PlayerState.PAUSED&&Date.now()-t0>4000){try{player.playVideo()}catch(e){}}
+      if(st!==YT.PlayerState.PAUSED&&st!==YT.PlayerState.BUFFERING&&Date.now()-t0>15000)fin();
+    },1000);
+  });
+}
+
+function tag(text){if(!$('optTag').checked)return;const t=$('tag');t.textContent=text;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),3500)}
+async function screen(id,ms){$(id).classList.add('show');await wait(ms);$(id).classList.remove('show');await new Promise(r=>setTimeout(r,900))}
+
+async function lobby(sec){
+  $('sLobby').classList.add('show');
+  for(let s=sec;s>0&&running;s--){
+    $('lCd').textContent=Math.floor(s/60)+':'+String(s%60).padStart(2,'0');
+    let skipped=false;await new Promise(r=>{timer=setTimeout(r,1000);skip=()=>{skipped=true;clearTimeout(timer);r()}});
+    if(skipped)break;
+  }
+  $('sLobby').classList.remove('show');await new Promise(r=>setTimeout(r,900));
+}
+
+async function run(){
+  const title=$('title').value.trim()||'오늘의 영화';
+  const ads=lines($('ads').value).map(ytId).filter(Boolean);
+  const trs=lines($('trailers').value).map(ytId).filter(Boolean);
+  const ott=$('ott').value.trim();
+  $('lTitle').textContent=$('fTitle').textContent=title;
+  running=true;$('setup').style.display='none';$('stage').classList.add('on');
+  try{await document.documentElement.requestFullscreen()}catch(e){}
+  if($('optLobby').checked)await lobby(Math.max(3,+$('lobbySec').value||15));
+  for(let i=0;i<ads.length&&running;i++){tag('광고 '+(i+1)+'/'+ads.length);await playYT(ads[i])}
+  for(let i=0;i<trs.length&&running;i++){tag('예고편 '+(i+1)+'/'+trs.length);await playYT(trs[i])}
+  if(running&&$('optManner').checked)await screen('sManner',7000);
+  if(!running)return;
+  $('sFeature').classList.add('show');await wait(4500);
+  $('lights').classList.add('on');await wait(2600);
+  if(!running)return;
+  if(ott)location.href=ott;else stop();
+}
+function stop(){
+  running=false;if(skip)skip();try{player&&player.stopVideo()}catch(e){}
+  document.querySelectorAll('.scr,#ytbox,#tag,#lights').forEach(e=>e.classList.remove('show','on'));
+  $('stage').classList.remove('on');$('setup').style.display='';
+  if(document.fullscreenElement)document.exitFullscreen().catch(()=>{});
+}
+
+$('f').addEventListener('submit',e=>{
+  e.preventDefault();
+  const n=lines($('ads').value).length+lines($('trailers').value).length;
+  const bad=[...lines($('ads').value),...lines($('trailers').value)].filter(u=>!ytId(u));
+  if(bad.length){$('msg').textContent='유튜브 링크가 아닌 줄이 '+bad.length+'개 있어요: '+bad[0];return}
+  if(!$('ott').value.trim()&&!n){$('msg').textContent='광고·예고편 링크나 OTT 링크를 넣어 주세요';return}
+  $('msg').textContent='';save();run();
+});
+
+let escAt=0;
+document.addEventListener('keydown',e=>{
+  if(!running)return;
+  if(e.key==='ArrowRight'){e.preventDefault();skip&&skip()}
+  else if(e.key===' '){e.preventDefault();try{player.getPlayerState()===1?player.pauseVideo():player.playVideo()}catch(x){}}
+  else if(e.key==='Escape'){const n=Date.now();if(n-escAt<1500)stop();escAt=n}
+});
+document.addEventListener('fullscreenchange',()=>{if(running&&!document.fullscreenElement){escAt=Date.now()}});
+
+load();renderOrder();
+}
+</script>
+</body>
+</html>
