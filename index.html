@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>우리집 영화관</title>
+<title>CGV</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
 <style>
@@ -44,7 +44,9 @@ input:focus,textarea:focus{border-color:var(--gold)}
 #start{height:60px;padding:0 48px;border:0;border-radius:999px;background:var(--red);font-size:19px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;line-height:1;box-shadow:0 8px 30px #b3122e55}
 #start:hover{background:#c8173a}#start:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
 #msg{grid-column:1/-1;text-align:center;color:var(--gold);min-height:24px;margin:0}
-.keys{grid-column:1/-1;text-align:center;color:var(--dim);font-size:13px}
+.guide{text-align:center;color:var(--dim);font-size:15px}
+.guide p{margin:6px 0}
+.guide .gt{color:var(--ink);font-weight:700;margin:0 0 10px}
 kbd{display:inline-block;border:1px solid var(--line);border-radius:6px;padding:0 6px;background:#1d1720;color:var(--ink)}
 @media(max-width:700px){.wrap{grid-template-columns:minmax(0,1fr)}.brand{font-size:34px}}
 /* 상영 화면 */
@@ -79,7 +81,7 @@ kbd{display:inline-block;border:1px solid var(--line);border-radius:6px;padding:
 </head>
 <body>
 <main id="setup">
-  <h1 class="brand">우리집 영화관</h1>
+  <h1 class="brand">CGV</h1>
   <p class="sub">광고 · 예고편이 끝나면 영화가 자동으로 이어집니다</p>
   <form class="wrap" id="f">
     <div class="card full">
@@ -120,9 +122,13 @@ kbd{display:inline-block;border:1px solid var(--line);border-radius:6px;padding:
     <div class="card full">
       <div class="order" id="order"></div>
     </div>
+    <div class="card full guide">
+      <p class="gt">사용 안내</p>
+      <p>영화(OTT)로 넘어가면 전체화면이 풀리니 <kbd>F</kbd> 키를 눌러 주세요</p>
+      <p>상영 중 <kbd>→</kbd> 다음으로 넘기기 · <kbd>Space</kbd> 일시정지 · <kbd>Esc</kbd> 두 번 누르면 상영 중단</p>
+    </div>
     <p id="msg"></p>
     <div class="go"><button type="submit" id="start">상영 시작</button></div>
-    <p class="keys">상영 중 <kbd>→</kbd> 다음으로 넘기기 · <kbd>Space</kbd> 일시정지 · <kbd>Esc</kbd> 두 번 누르면 상영 중단</p>
   </form>
 </main>
 
@@ -146,7 +152,6 @@ kbd{display:inline-block;border:1px solid var(--line);border-radius:6px;padding:
   <section class="scr feature" id="sFeature">
     <div class="lab">FEATURE PRESENTATION</div>
     <h2 id="fTitle"></h2>
-    <div class="tip">영화가 열리면 <b style="color:#aaa">F</b> 키나 전체화면 버튼을 눌러 주세요</div>
   </section>
   <div id="lights"></div>
 </div>
