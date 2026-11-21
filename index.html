@@ -23,8 +23,15 @@ label{display:block;font-weight:700;margin-bottom:8px}
 .hint{color:var(--dim);font-size:13px;margin:6px 0 0}
 input[type=text],input[type=number],textarea{width:100%;background:#0f0c10;border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:16px;outline:none}
 input:focus,textarea:focus{border-color:var(--gold)}
-textarea{min-height:132px;resize:vertical;line-height:1.6}
-textarea.short{min-height:84px}
+.list{display:flex;flex-direction:column;gap:8px}
+.it{display:grid;grid-template-columns:50px minmax(0,1fr) 50px;gap:8px;align-items:stretch}
+.no{display:flex;align-items:center;justify-content:center;border-radius:10px;background:#221b25;color:var(--dim);font-size:14px;line-height:1}
+.del,.add{display:flex;align-items:center;justify-content:center;border-radius:10px;background:transparent;color:var(--dim);cursor:pointer;line-height:1}
+.del{border:1px solid var(--line)}
+.del svg{width:14px;height:14px}
+.add{width:100%;height:44px;margin-top:10px;border:1px dashed var(--line);font-size:15px}
+.del:hover,.add:hover{color:var(--ink);border-color:var(--gold)}
+.it input.bad{border-color:var(--red)}
 .row{display:flex;gap:18px;flex-wrap:wrap;align-items:center}
 .chk{display:flex;align-items:center;gap:10px;font-weight:500;margin:0;cursor:pointer}
 .chk input{width:20px;height:20px;accent-color:var(--red)}
@@ -79,19 +86,22 @@ kbd{display:inline-block;border:1px solid var(--line);border-radius:6px;padding:
       <label for="title">오늘의 상영작</label>
       <input type="text" id="title" placeholder="예: 인터스텔라">
     </div>
-    <div class="card">
+    <div class="card full">
       <label for="ads">광고 영상</label>
-      <textarea id="ads" placeholder="유튜브 링크를 한 줄에 하나씩"></textarea>
+      <textarea id="ads" hidden></textarea><div class="list" data-for="ads"></div>
+      <button type="button" class="add" data-for="ads">+ 광고 추가</button>
       <p class="hint">위에서부터 순서대로 재생됩니다</p>
     </div>
-    <div class="card">
+    <div class="card full">
       <label for="trailers">예고편</label>
-      <textarea id="trailers" placeholder="유튜브 링크를 한 줄에 하나씩"></textarea>
+      <textarea id="trailers" hidden></textarea><div class="list" data-for="trailers"></div>
+      <button type="button" class="add" data-for="trailers">+ 예고편 추가</button>
       <p class="hint">광고가 끝난 뒤 순서대로 재생됩니다</p>
     </div>
     <div class="card full">
       <label for="intro">영화 시작 영상</label>
-      <textarea id="intro" class="short" placeholder="유튜브 링크를 한 줄에 하나씩 (예: 영화관 본편 시작 영상)"></textarea>
+      <textarea id="intro" hidden></textarea><div class="list" data-for="intro"></div>
+      <button type="button" class="add" data-for="intro">+ 시작 영상 추가</button>
       <p class="hint">본 영화가 열리기 바로 직전에 재생됩니다</p>
     </div>
     <div class="card full">
@@ -263,7 +273,22 @@ document.addEventListener('keydown',e=>{
 });
 document.addEventListener('fullscreenchange',()=>{if(running&&!document.fullscreenElement){escAt=Date.now()}});
 
-load();renderOrder();
+const X='<svg viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 2l10 10M12 2L2 12"/></svg>';
+const esc=v=>v.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+const boxOf=id=>document.querySelector('.list[data-for='+id+']');
+function rows(id,focusLast){
+  const v=$(id).value?$(id).value.split('\n'):[''];
+  boxOf(id).innerHTML=v.map((x,i)=>'<div class="it"><span class="no">'+(i+1)+'</span><input type="text" value="'+esc(x)+'" placeholder="유튜브 링크 붙여 넣기"'+(x.trim()&&!ytId(x)?' class="bad"':'')+'><button type="button" class="del" aria-label="'+(i+1)+'번 지우기">'+X+'</button></div>').join('');
+  if(focusLast){const a=boxOf(id).querySelectorAll('input');a[a.length-1].focus()}
+}
+function sync(id){$(id).value=[...boxOf(id).querySelectorAll('input')].map(i=>i.value.trim()).join('\n');save();renderOrder()}
+['ads','trailers','intro'].forEach(id=>{
+  const b=boxOf(id);
+  b.addEventListener('input',e=>{const t=e.target;t.classList.toggle('bad',!!t.value.trim()&&!ytId(t.value));sync(id)});
+  b.addEventListener('click',e=>{const d=e.target.closest('.del');if(!d)return;const its=[...b.children],i=its.indexOf(d.parentNode);const v=$(id).value.split('\n');v.splice(i,1);$(id).value=v.join('\n');rows(id);save();renderOrder()});
+  document.querySelector('.add[data-for='+id+']').addEventListener('click',()=>{sync(id);$(id).value+='\n';rows(id,true)});
+});
+load();['ads','trailers','intro'].forEach(id=>rows(id));renderOrder();
 }
 </script>
 </body>
