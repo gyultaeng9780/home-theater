@@ -201,13 +201,14 @@ async function playYT(id){
     if(!player){
       player=new YT.Player('yt',{host:'https://www.youtube-nocookie.com',videoId:id,
         playerVars:{autoplay:1,controls:0,rel:0,iv_load_policy:3,disablekb:1,playsinline:1,fs:0},
-        events:{onReady:e=>{e.target.unMute();e.target.setVolume(100);e.target.playVideo()},onStateChange:e=>player._h&&player._h(e),onError:()=>fin()}});
+        events:{onReady:e=>{e.target.unMute();e.target.setVolume(100);e.target.playVideo()},onStateChange:e=>player._h&&player._h(e),onError:()=>player._e&&player._e()}});
     }else{player.loadVideoById(id)}
-    player._h=onState;
+    player._h=onState;player._e=fin;
+    setTimeout(()=>{if(!done)$('ytbox').classList.add('show')},700);
     let t0=Date.now();
     watch=setInterval(()=>{ // 재생이 시작되지 않으면 다시 시도 후 건너뛰기
       let st=-1;try{st=player.getPlayerState()}catch(e){}
-      if(st===YT.PlayerState.PLAYING){t0=Date.now();return}
+      if(st===YT.PlayerState.PLAYING){t0=Date.now();$('ytbox').classList.add('show');return}
       if(st!==YT.PlayerState.PAUSED&&Date.now()-t0>4000){try{player.playVideo()}catch(e){}}
     },1000);
   });
