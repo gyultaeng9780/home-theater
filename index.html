@@ -175,6 +175,7 @@ function renderOrder(){
   if($('optManner').checked)s.push('관람 안내');
   if(a)s.push('광고 '+a+'편');
   if(t)s.push('예고편 '+t+'편');
+  s.push('제목 화면');
   const v=lines($('intro').value).length;if(v)s.push('시작 영상 '+v+'편');
   s.push('본 영화');
   $('order').innerHTML=s.map(x=>'<span class="step">'+x+'</span>').join('<span class="arrow">›</span>');
@@ -238,10 +239,11 @@ async function run(){
   if(running&&$('optManner').checked)await screen('sManner',7000);
   for(let i=0;i<ads.length&&running;i++){tag('광고 '+(i+1)+'/'+ads.length);await playYT(ads[i])}
   for(let i=0;i<trs.length&&running;i++){tag('예고편 '+(i+1)+'/'+trs.length);await playYT(trs[i])}
-  for(let i=0;i<intro.length&&running;i++)await playYT(intro[i]);
   if(!running)return;
   $('sFeature').classList.add('show');await wait(4500);
-  $('lights').classList.add('on');await wait(2600);
+  $('sFeature').classList.remove('show');await new Promise(r=>setTimeout(r,900));
+  for(let i=0;i<intro.length&&running;i++)await playYT(intro[i]);
+  $('lights').classList.add('on');
   if(!running)return;
   if(ott)location.href=ott;else stop();
 }
