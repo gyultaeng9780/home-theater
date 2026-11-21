@@ -24,10 +24,11 @@ label{display:block;font-weight:700;margin-bottom:8px}
 input[type=text],input[type=number],textarea{width:100%;background:#0f0c10;border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:16px;outline:none}
 input:focus,textarea:focus{border-color:var(--gold)}
 textarea{min-height:132px;resize:vertical;line-height:1.6}
+textarea.short{min-height:84px}
 .row{display:flex;gap:18px;flex-wrap:wrap;align-items:center}
 .chk{display:flex;align-items:center;gap:10px;font-weight:500;margin:0;cursor:pointer}
 .chk input{width:20px;height:20px;accent-color:var(--red)}
-.num{display:flex;align-items:center;gap:10px;font-weight:500}
+.num{display:flex;align-items:center;gap:10px;font-weight:500;margin:0}
 .num input{width:84px;text-align:center}
 .order{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:4px}
 .step{display:inline-flex;align-items:center;justify-content:center;height:36px;padding:0 14px;border-radius:999px;background:#221b25;border:1px solid var(--line);font-size:14px;line-height:1}
@@ -89,6 +90,11 @@ kbd{display:inline-block;border:1px solid var(--line);border-radius:6px;padding:
       <p class="hint">광고가 끝난 뒤 순서대로 재생됩니다</p>
     </div>
     <div class="card full">
+      <label for="intro">영화 시작 영상</label>
+      <textarea id="intro" class="short" placeholder="유튜브 링크를 한 줄에 하나씩 (예: 영화관 본편 시작 영상)"></textarea>
+      <p class="hint">본 영화가 열리기 바로 직전에 재생됩니다</p>
+    </div>
+    <div class="card full">
       <label for="ott">본 영화 OTT 링크</label>
       <input type="text" id="ott" placeholder="예: https://www.netflix.com/watch/80000000">
       <p class="hint">OTT에서 영화 재생 화면을 연 뒤 주소창의 주소를 그대로 붙여 넣어 주세요</p>
@@ -139,7 +145,7 @@ kbd{display:inline-block;border:1px solid var(--line);border-radius:6px;padding:
 {
 const $=id=>document.getElementById(id);
 const KEY='home-theater-v1';
-const fields=['title','ads','trailers','ott','lobbySec'], checks=['optLobby','optManner','optTag'];
+const fields=['title','ads','trailers','intro','ott','lobbySec'], checks=['optLobby','optManner','optTag'];
 
 function ytId(u){
   u=u.trim(); if(!u) return null;
@@ -159,6 +165,7 @@ function renderOrder(){
   if(a)s.push('광고 '+a+'편');
   if(t)s.push('예고편 '+t+'편');
   if($('optManner').checked)s.push('관람 안내');
+  const v=lines($('intro').value).length;if(v)s.push('시작 영상 '+v+'편');
   s.push('본 영화');
   $('order').innerHTML=s.map(x=>'<span class="step">'+x+'</span>').join('<span class="arrow">›</span>');
 }
@@ -213,6 +220,7 @@ async function run(){
   const title=$('title').value.trim()||'오늘의 영화';
   const ads=lines($('ads').value).map(ytId).filter(Boolean);
   const trs=lines($('trailers').value).map(ytId).filter(Boolean);
+  const intro=lines($('intro').value).map(ytId).filter(Boolean);
   const ott=$('ott').value.trim();
   $('lTitle').textContent=$('fTitle').textContent=title;
   running=true;$('setup').style.display='none';$('stage').classList.add('on');
@@ -223,6 +231,9 @@ async function run(){
   if(running&&$('optManner').checked)await screen('sManner',7000);
   if(!running)return;
   $('sFeature').classList.add('show');await wait(4500);
+  if(intro.length){$('sFeature').classList.remove('show');await new Promise(r=>setTimeout(r,900));
+    for(let i=0;i<intro.length&&running;i++)await playYT(intro[i]);
+    if(!running)return;}
   $('lights').classList.add('on');await wait(2600);
   if(!running)return;
   if(ott)location.href=ott;else stop();
@@ -236,8 +247,8 @@ function stop(){
 
 $('f').addEventListener('submit',e=>{
   e.preventDefault();
-  const n=lines($('ads').value).length+lines($('trailers').value).length;
-  const bad=[...lines($('ads').value),...lines($('trailers').value)].filter(u=>!ytId(u));
+  const all=[...lines($('ads').value),...lines($('trailers').value),...lines($('intro').value)];const n=all.length;
+  const bad=all.filter(u=>!ytId(u));
   if(bad.length){$('msg').textContent='유튜브 링크가 아닌 줄이 '+bad.length+'개 있어요: '+bad[0];return}
   if(!$('ott').value.trim()&&!n){$('msg').textContent='광고·예고편 링크나 OTT 링크를 넣어 주세요';return}
   $('msg').textContent='';save();run();
